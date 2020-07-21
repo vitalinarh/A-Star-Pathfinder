@@ -1,13 +1,16 @@
 import pygame
 import math
 from queue import PriorityQueue
+import sys
 
+GRID_WIDTH = 800
 WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 900
 
 # COLORS
 RED          = (255, 0, 0)
 GREEN        = (0, 255, 0)
-BLUE         = (0, 0, 255)
+BLUE         = (50, 50, 220)
 ELECTRIC     = (126, 249, 255)
 AIRFORCE     = (126, 139, 174)
 TEAL         = (0, 128, 129)
@@ -16,11 +19,11 @@ OLYMPIC      = (0, 142, 204)
 TURQUOISE    = (63, 224, 208)
 AZURE        = (0, 128, 255)
 YELLOW       = (255, 255, 0)
-WHITE        = (255, 255, 255)
+WHITE        = (220, 220, 220)
 BLACK        = (0, 0, 0)
 PURPLE       = (128, 0, 128)
 ORANGE       = (255, 165, 0)
-GREY         = (220, 220, 220)
+GREY         = (30, 30, 30)
 
 class Node:
     def __init__(self, row, column, width, total_rows):
@@ -28,7 +31,7 @@ class Node:
         self.column = column
         self.x = row * width
         self.y = column * width
-        self.color = WHITE
+        self.color = BLACK
         self.neighbours = []
         self.width = width
         self.total_rows = total_rows
@@ -40,10 +43,10 @@ class Node:
         return self.color == CORNFLOWER
 
     def is_open(self):
-        return self.color == TURQUOISE
+        return self.color == BLUE
 
     def is_block(self):
-        return self.color == BLACK
+        return self.color == WHITE
 
     def is_start(self):
         return self.color == AIRFORCE
@@ -55,22 +58,22 @@ class Node:
         self.color = AIRFORCE
 
     def reset(self):
-        self.color = WHITE
+        self.color = BLACK
 
     def close(self):
         self.color = CORNFLOWER
 
     def open(self):
-        self.color = TURQUOISE
+        self.color = BLUE
 
     def block(self):
-        self.color = BLACK
+        self.color = WHITE
 
     def end(self):
         self.color = TEAL
 
     def path(self):
-        self.color = ELECTRIC
+        self.color = TURQUOISE
 
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
@@ -78,19 +81,19 @@ class Node:
     def update_neighbours(self, grid):
         self.neighbours = []
 
-        # Down
+        # Check Down
         if self.row < self.total_rows - 1 and not grid[self.row + 1][self.column].is_block():
             self.neighbours.append(grid[self.row + 1][self.column])
 
-        # Up
+        # Check Up
         if self.row > 0 and not grid[self.row - 1][self.column].is_block():
             self.neighbours.append(grid[self.row - 1][self.column])
 
-        # Right
+        # Check Right
         if self.column < self.total_rows - 1 and not grid[self.row][self.column + 1].is_block():
             self.neighbours.append(grid[self.row][self.column + 1])
 
-        # Left
+        # Check Left
         if self.column > 0 and not grid[self.row][self.column - 1].is_block():
             self.neighbours.append(grid[self.row][self.column - 1])
 
@@ -121,7 +124,12 @@ def draw_grid(win, rows, width):
             pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
 def draw(win, grid, rows, width):
-    win.fill(WHITE)
+
+    win.fill(GREY)
+    drawText('Right Click - Select ', 100, 820, WHITE)
+    drawText('Left Click - Erase ', 93, 850, WHITE)
+    drawText('Space - Solve ', 85, 880, WHITE)
+    drawText('R - Reset ', 200, 880, WHITE)
 
     for row in grid:
         for node in row:
@@ -198,10 +206,21 @@ def solve(draw, grid, start, end):
 
     return False
 
+def drawText(message, x, y, color):
+
+
+    font = pygame.font.SysFont('arial', 14)
+    text = font.render(message, True, color, GREY)
+
+    textRect = text.get_rect()
+    textRect.center = (x, y)
+
+    SCREEN.blit(text, textRect)
+
 # MAIN FUCTION
 def main(win, width):
     ROWS = 50
-    grid = build_grid(ROWS, width)
+    grid = build_grid(ROWS, GRID_WIDTH)
 
     start = None
     end = None
@@ -210,8 +229,11 @@ def main(win, width):
     started = False
     ended = False
 
+    pygame.init()
+
     while run:
         draw(win, grid, ROWS, width)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -267,6 +289,6 @@ def main(win, width):
     pygame.quit()
 
 if __name__ == '__main__':
-    SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_WIDTH))
+    SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("A* Pathfinding Algorithm.")
     main(SCREEN, WINDOW_WIDTH)
